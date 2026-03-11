@@ -4,28 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Jogo da Memória - MIS Ceará</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#006400">
     <link rel="apple-touch-icon" href="imagens/logo_app.png">
-    <style>
-        :root { --primary: #006400; --secondary: #2196F3; --success: #27ae60; --danger: #e74c3c; --dark: #121212; }
-        body { margin: 0; font-family: sans-serif; background: var(--dark); color: white; text-align: center; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-        
-        /* Splash Screen */
-        #splash-screen { position: fixed; inset: 0; background: var(--dark); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.6s ease; }
-        .splash-logo { width: 220px; border-radius: 15px; margin-bottom: 20px; }
-        
-        /* Header & Status */
-        header { padding: 15px; background: #1f1f1f; border-bottom: 2px solid #333; }
-        #status-bar { margin-top: 5px; font-size: 0.9em; min-height: 1.2em; }
-        .alerta { color: var(--danger); font-weight: bold; }
 
-        /* Grid */
-        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; }
-        .grid { display: grid; gap: 12px; width: 100%; max-width: 1000px; grid-template-columns: repeat(var(--cols, 4), minmax(60px, 1fr)); }
+    <style>
+        :root { 
+            --primary: #006400; --secondary: #2196F3; --success: #27ae60; 
+            --danger: #e74c3c; --dark: #121212;
+        }
         
-        /* Card Style */
-        .card { aspect-ratio: 1/1; perspective: 1000px; cursor: pointer; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body { 
+            margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--dark); 
+            color: white; text-align: center; display: flex; flex-direction: column; 
+            height: 100vh; width: 100vw; overflow: hidden; user-select: none;
+        }
+
+        /* Splash Screen */
+        #splash-screen {
+            position: fixed; inset: 0; background: #121212; display: flex; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 9999; transition: opacity 0.6s ease;
+        }
+        .splash-logo { width: 200px; border-radius: 15px; margin-bottom: 20px; }
+
+        /* Cabeçalho Fixo - Impede sobreposição */
+        header { 
+            height: 80px; /* Altura fixa para controle total */
+            padding: 10px; 
+            background: #1f1f1f; 
+            border-bottom: 2px solid #333; 
+            flex-shrink: 0; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 100;
+        }
+        .header-player { font-size: 1.2rem; color: var(--secondary); font-weight: bold; }
+        #status-bar { font-size: 0.9rem; min-height: 1.2em; margin-top: 4px; }
+
+        /* Área Principal de Jogo - Ocupa o resto da tela */
+        .main-content { 
+            flex: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 15px;
+            overflow: hidden; /* Garante que nada saia da tela */
+        }
+
+        /* GRID INTELIGENTE: Ajusta o tamanho dos cards para caber na tela disponível */
+        .grid { 
+            display: grid; 
+            gap: 10px; 
+            width: 100%;
+            height: 100%;
+            max-width: 95vw;
+            max-height: calc(100vh - 120px); /* Desconta o header e margens */
+            margin: auto;
+            justify-content: center;
+            align-content: center;
+            grid-template-columns: repeat(var(--cols, 4), minmax(20px, 1fr)); 
+        }
+
+        /* Cards Proporcionais */
+        .card { 
+            width: 100%;
+            max-height: 20vh; /* Limita altura para não esticar demais */
+            aspect-ratio: 1/1; 
+            perspective: 1000px; 
+            cursor: pointer; 
+        }
         .inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
         .card.flip .inner { transform: rotateY(180deg); }
         .front, .back { position: absolute; width: 100%; height: 100%; border-radius: 8px; backface-visibility: hidden; background-size: cover; background-position: center; }
@@ -33,71 +85,67 @@
         .back { transform: rotateY(180deg); border: 2px solid var(--primary); }
 
         /* Modal e Teclado */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .box { background: #222; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; border: 2px solid #444; }
-        #nome-display { font-size: 24px; margin-bottom: 15px; background: #000; border: 2px solid var(--secondary); color: white; text-align: center; width: 100%; padding: 12px; border-radius: 8px; outline: none; text-transform: uppercase; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 10px; }
+        .box { background: #222; padding: 20px; border-radius: 15px; width: 100%; max-width: 500px; border: 2px solid #444; }
+        #nome-display { font-size: 24px; margin-bottom: 15px; background: #000; border: 2px solid var(--secondary); color: white; text-align: center; width: 100%; padding: 10px; border-radius: 8px; outline: none; }
         
-        .teclado-row { display: flex; justify-content: center; gap: 5px; margin-bottom: 8px; }
-        .key { flex: 1; padding: 15px 0; background: #333; border-radius: 5px; cursor: pointer; font-weight: bold; border: 1px solid #444; }
-        .key.active { background: var(--primary) !important; transform: translateY(2px); }
-        .key.wide { flex: 2; }
-        
-        button { padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; width: 100%; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        .teclado-row { display: flex; justify-content: center; gap: 4px; margin-bottom: 8px; }
+        .key { flex: 1; padding: 15px 0; background: #333; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; border: 1px solid #444; }
+        .key.active { background: var(--primary) !important; transform: scale(0.95); }
+        .key.wide { flex: 2.5; }
+
+        button { padding: 15px; font-size: 16px; cursor: pointer; border: none; background: var(--primary); color: white; border-radius: 8px; width: 100%; font-weight: bold; margin-top: 5px; }
         .hidden { display: none !important; }
+        .alerta { color: var(--danger); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="splash-screen">
     <img src="imagens/logo_ini.jpg" alt="Logo MIS" class="splash-logo">
-    <div style="color: #27ae60;">CARREGANDO...</div>
+    <div style="color: var(--success); letter-spacing: 2px;">CARREGANDO...</div>
 </div>
 
 <header>
-    <div id="header-player" style="font-weight: bold; color: var(--secondary);">MIS CEARÁ</div>
-    <div id="status-bar">Aguardando jogador...</div>
+    <div id="header-player" class="header-player">MIS CEARÁ</div>
+    <div id="status-bar">Aguardando...</div>
 </header>
 
 <div class="main-content">
     <div id="menu" class="hidden">
-        <h3>Escolha a Dificuldade</h3>
-        <button onclick="comecarJogo(1)">Nível 1 (Fácil)</button>
-        <button onclick="comecarJogo(2)">Nível 2 (Médio)</button>
-        <button onclick="comecarJogo(3)">Nível 3 (Difícil)</button>
+        <h3 style="margin-bottom: 20px;">Escolha o Nível</h3>
+        <div style="display: flex; flex-direction: column; width: 280px; margin: auto; gap: 10px;">
+            <button onclick="comecarJogo(1)">Nível 1 - 4x4</button>
+            <button onclick="comecarJogo(2)">Nível 2 - 5x4</button>
+            <button onclick="comecarJogo(3)">Nível 3 - 6x4</button>
+        </div>
     </div>
     <div id="grid" class="grid hidden"></div>
 </div>
 
 <div id="modal-nome" class="modal">
     <div class="box">
-        <h2>Identifique-se</h2>
+        <h2 style="margin-top:0">Identifique-se</h2>
         <input type="text" id="nome-display" maxlength="12" readonly>
         <div id="keys-container"></div>
-        <button onclick="salvarNome()" style="background: var(--success);">ENTRAR</button>
+        <button onclick="salvarNome()" style="background:var(--success); margin-top:15px;">ENTRAR</button>
     </div>
 </div>
 
 <script>
-// --- REGISTRO DO SERVICE WORKER ---
+// --- SERVICE WORKER ---
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js');
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
     });
 }
 
-// --- CONFIGURAÇÃO E VARIÁVEIS ---
-const fases = { 1: { pares: 8, colunas: 4, tempo: 45 }, 2: { pares: 10, colunas: 5, tempo: 60 }, 3: { pares: 12, colunas: 6, tempo: 90 } };
-let nomeUsuario = "", tempoRestante, timerInterval, primeira, segunda, bloqueado = true, paresRestantes;
-
-// --- TECLADO (LÓGICA UNIFICADA: FÍSICO + VIRTUAL) ---
+// --- LOGICA TECLADO ---
 function criarTeclado() {
     const container = document.getElementById("keys-container");
     const layout = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM", ["←", "Backspace"], ["ESPAÇO", " "]];
-    
     layout.forEach(linha => {
-        const row = document.createElement("div");
-        row.className = "teclado-row";
-        
+        const row = document.createElement("div"); row.className = "teclado-row";
         if (typeof linha === "string") {
             linha.split("").forEach(char => row.appendChild(criarTecla(char, char)));
         } else {
@@ -118,29 +166,19 @@ function criarTecla(label, valor, wide = false) {
 
 function digitar(t) {
     const inp = document.getElementById("nome-display");
-    // Efeito visual na tecla
-    const id = t === " " ? "key-Space" : `key-${t}`;
+    const id = (t === " " || t === "Space") ? "key-Space" : `key-${t}`;
     const keyElement = document.getElementById(id);
-    if (keyElement) {
-        keyElement.classList.add("active");
-        setTimeout(() => keyElement.classList.remove("active"), 150);
-    }
-
+    if (keyElement) { keyElement.classList.add("active"); setTimeout(() => keyElement.classList.remove("active"), 150); }
     if (t === "Backspace" || t === "←") inp.value = inp.value.slice(0, -1);
-    else if (t === " " || t === "Space") { if (inp.value.length < 12) inp.value += " "; }
     else if (t === "Enter") salvarNome();
-    else if (t === "Escape") document.getElementById("modal-nome").classList.add("hidden");
+    else if ((t === " " || t === "Space") && inp.value.length < 12) inp.value += " ";
     else if (t.length === 1 && inp.value.length < 12) inp.value += t.toUpperCase();
 }
 
-// Escuta teclado físico
 window.addEventListener("keydown", (e) => {
     if (!document.getElementById("modal-nome").classList.contains("hidden")) {
-        const key = e.key;
-        // Permite apenas letras, espaço, backspace e enter
-        if (key.match(/^[a-zA-Z ]$/) || key === "Backspace" || key === "Enter" || key === "Escape") {
-            e.preventDefault();
-            digitar(key === " " ? "Space" : key);
+        if (e.key.match(/^[a-zA-Z ]$/) || e.key === "Backspace" || e.key === "Enter") {
+            e.preventDefault(); digitar(e.key === " " ? "Space" : e.key);
         }
     }
 });
@@ -150,372 +188,69 @@ function salvarNome() {
     document.getElementById("modal-nome").classList.add("hidden");
     document.getElementById("header-player").innerText = `JOGADOR: ${nomeUsuario}`;
     document.getElementById("menu").classList.remove("hidden");
+    document.getElementById("status-bar").innerText = "Selecione a dificuldade";
 }
 
-// --- LÓGICA DO JOGO (RESUMIDA) ---
-function comecarJogo(nivel) {
-    const jogo = fases[nivel];
-    paresRestantes = jogo.pares;
-    tempoRestante = jogo.tempo;
-    bloqueado = false;
+// --- LOGICA JOGO ---
+const fases = { 1: { pares: 8, cols: 4, tempo: 45 }, 2: { pares: 10, cols: 5, tempo: 60 }, 3: { pares: 12, cols: 6, tempo: 90 } };
+let nomeUsuario = "", tempoRestante, timerInterval, primeira, segunda, bloqueado = true, paresRestantes;
+
+function comecarJogo(n) {
+    const jogo = fases[n];
+    paresRestantes = jogo.pares; tempoRestante = jogo.tempo; bloqueado = true;
+    const grid = document.getElementById("grid");
     document.getElementById("menu").classList.add("hidden");
-    document.getElementById("grid").classList.remove("hidden");
-    document.getElementById("grid").style.setProperty('--cols', jogo.colunas);
-    // ... restante da lógica de gerar cartas (manter a anterior)
-}
+    grid.classList.remove("hidden");
+    grid.style.setProperty('--cols', jogo.cols);
+    grid.innerHTML = "";
 
-window.onload = () => {
-    criarTeclado();
-    setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
-        splash.style.opacity = '0';
-        setTimeout(() => splash.remove(), 600);
-    }, 2000);
-};
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jogo da Memória - MIS Ceará</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#006400">
-    <link rel="apple-touch-icon" href="imagens/logo_app.png">
+    let nums = []; for(let i=2; i<=40; i++) nums.push(i);
+    nums.sort(() => Math.random() - 0.5);
+    let deck = [...nums.slice(0, jogo.pares), ...nums.slice(0, jogo.pares)].sort(() => Math.random() - 0.5);
 
-    <style>
-        :root { --primary: #006400; --secondary: #2196F3; --dark: #121212; }
-        body { margin: 0; background: var(--dark); color: white; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-        
-        /* Splash Screen */
-        #splash-screen {
-            position: fixed; inset: 0; background: var(--dark); display: flex; 
-            flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 9999; transition: opacity 0.6s ease;
-        }
-        .splash-logo { width: 220px; border-radius: 15px; margin-bottom: 20px; }
-        .loader-text { color: #27ae60; font-weight: bold; letter-spacing: 2px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-        /* Resto do CSS simplificado para o exemplo - mantenha o seu CSS original abaixo */
-        header { padding: 15px; background: #1f1f1f; border-bottom: 2px solid #333; }
-        .grid { display: grid; gap: 10px; padding: 20px; justify-content: center; }
-        .card { width: 80px; height: 80px; background: #444; border-radius: 8px; } /* Exemplo */
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
-
-<div id="splash-screen">
-    <img src="imagens/logo_ini.jpg" alt="MIS Ceará" class="splash-logo">
-    <div class="loader-text">A CARREGAR...</div>
-</div>
-
-<header>
-    <div id="header-player">MIS CEARÁ</div>
-</header>
-
-<main class="main-content">
-    <div id="menu">
-        <button onclick="comecarJogo(1)">Nível 1</button>
-    </div>
-    <div id="grid" class="grid hidden"></div>
-</main>
-
-<script>
-// Registro do Service Worker
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then(reg => {
-            console.log('PWA Pronto!');
-        });
-    });
-}
-
-// Lógica da Splash Screen
-window.onload = () => {
-    setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
-        splash.style.opacity = '0';
-        setTimeout(() => splash.remove(), 600);
-    }, 2500); // Exibe por 2.5 segundos
-};
-
-// --- Insira aqui o restante da sua lógica de jogo (clicarCarta, comecarJogo, etc) ---
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jogo da Memória - MIS Ceará</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#006400">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="imagens/logo_app.png">
-
-    <style>
-        :root { 
-            --primary: #006400; --secondary: #2196F3; --success: #27ae60; 
-            --danger: #e74c3c; --dark: #121212; --card-gap: 12px;
-        }
-        
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body { 
-            margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--dark); 
-            color: white; text-align: center; display: flex; flex-direction: column; 
-            height: 100vh; overflow: hidden; user-select: none;
-        }
-
-        /* Splash Screen */
-        #splash-screen {
-            position: fixed; inset: 0; background: #121212; display: flex; 
-            flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 9999; transition: opacity 0.6s ease;
-        }
-        .splash-logo { width: 180px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 0 30px rgba(0,100,0,0.3); }
-        .loader-text { color: var(--success); font-weight: bold; letter-spacing: 3px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        /* Cabeçalho */
-        header { padding: 15px; background: #1f1f1f; border-bottom: 2px solid #333; flex-shrink: 0; z-index: 10; }
-        .header-museum { font-size: 0.8em; opacity: 0.7; letter-spacing: 1px; margin-bottom: 4px; }
-        .header-player { font-size: 1.3em; color: var(--secondary); font-weight: bold; }
-        #status-bar { margin-top: 5px; font-size: 0.9em; min-height: 1.2em; transition: 0.3s; }
-        #status-bar.alerta { color: var(--danger); font-weight: bold; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
-
-        /* Área de Jogo */
-        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; }
-        .grid { 
-            display: grid; gap: var(--card-gap); width: 100%; max-width: 1000px; margin: auto;
-            grid-template-columns: repeat(var(--cols, 4), minmax(60px, 1fr)); 
-        }
-
-        .card { width: 100%; aspect-ratio: 1/1; perspective: 1000px; cursor: pointer; }
-        .inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
-        .card.flip .inner { transform: rotateY(180deg); }
-        .front, .back { position: absolute; width: 100%; height: 100%; border-radius: 8px; backface-visibility: hidden; background-size: cover; background-position: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .front { background-image: url('imagens/capa.jpg'); border: 2px solid #444; }
-        .back { transform: rotateY(180deg); border: 2px solid var(--primary); }
-
-        /* Modais e Teclado */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
-        .box { background: #222; padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; border: 2px solid #444; }
-        #nome-display { font-size: 24px; margin-bottom: 15px; background: #000; border: 2px solid var(--secondary); color: white; text-align: center; width: 100%; padding: 12px; border-radius: 8px; outline: none; text-transform: uppercase; }
-        .teclado-row { display: flex; justify-content: center; gap: 5px; margin-bottom: 8px; }
-        .key { flex: 1; padding: 15px 0; background: #333; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; border: 1px solid #444; transition: 0.1s; }
-        .key.active, .key:active { background: var(--primary); transform: translateY(2px); border-color: var(--success); }
-        .key.wide { flex: 2; background: #555; }
-
-        button { padding: 15px 20px; font-size: 16px; cursor: pointer; border: none; background: var(--primary); color: white; border-radius: 8px; margin: 8px 0; width: 100%; font-weight: bold; transition: 0.2s; }
-        button:active { transform: scale(0.98); filter: brightness(1.2); }
-        
-        #feedback { position: fixed; top: 25%; left: 50%; transform: translate(-50%, -50%); background: var(--secondary); padding: 15px 30px; border-radius: 50px; display: none; z-index: 2000; font-weight: bold; pointer-events: none; }
-        .confetti { position: fixed; width: 10px; height: 10px; z-index: 3000; animation: fall linear forwards; }
-        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } }
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
-
-<div id="splash-screen">
-    <img src="imagens/logo_app.png" alt="Logo MIS" class="splash-logo">
-    <div class="loader-text">MIS CEARÁ</div>
-</div>
-
-<header>
-    <div class="header-museum">JOGO DA MEMÓRIA - MIS CEARÁ</div>
-    <div id="header-player" class="header-player">Aguardando...</div>
-    <div id="status-bar">Carregando interface...</div>
-</header>
-
-<div class="main-content">
-    <div id="menu" class="hidden">
-        <h3>Escolha uma Dificuldade</h3>
-        <div style="display: flex; flex-direction: column; max-width: 320px; margin: auto;">
-            <button onclick="comecarJogo(1)">Nível 1 - Fácil (45s)</button>
-            <button onclick="comecarJogo(2)">Nível 2 - Médio (60s)</button>
-            <button onclick="comecarJogo(3)">Nível 3 - Difícil (90s)</button>
-        </div>
-    </div>
-    <div id="grid" class="grid hidden"></div>
-</div>
-
-<div id="modal-nome" class="modal">
-    <div class="box">
-        <h2>Identifique-se</h2>
-        <input type="text" id="nome-display" maxlength="12" placeholder="NOME DO JOGADOR" readonly>
-        <div id="keys-container"></div>
-        <button onclick="salvarNome()" style="background:var(--success); margin-top:15px;">ENTRAR (ENTER)</button>
-        <button onclick="jogarSemNome()" style="background:#444;">JOGAR SEM NOME (ESC)</button>
-    </div>
-</div>
-
-<div id="modal-conclusao" class="modal hidden">
-    <div class="box">
-        <h2 id="titulo-vitoria" style="color: var(--success);">🏆 Vitória!</h2>
-        <p id="msg-vitoria" style="font-size: 1.2em; margin-bottom: 20px;"></p>
-        <button id="btn-continuar" onclick="proximaFase()" style="background:var(--success);">Próxima Fase</button>
-        <button onclick="voltarInicio()" style="background:#555;">Menu Principal</button>
-    </div>
-</div>
-
-<div id="modal-gameover" class="modal hidden">
-    <div class="box">
-        <h2 style="color: var(--danger);">⏰ Tempo Esgotado!</h2>
-        <p id="msg-gameover" style="font-size: 1.1em; margin-bottom: 20px;">Não foi desta vez!</p>
-        <button onclick="recomecarFase()" style="background:var(--secondary);">Tentar Novamente</button>
-        <button onclick="voltarInicio()" style="background:#555;">Sair</button>
-    </div>
-</div>
-
-<div id="feedback">Parabéns! Você acertou.</div>
-
-<script>
-// --- REGISTRO DO SERVICE WORKER (Correção de Escopo) ---
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('SW registrado!', reg.scope))
-            .catch(err => console.log('Erro no SW:', err));
-    });
-}
-
-// --- CONFIG ---
-const MIN_IMAGEM = 2; const MAX_IMAGEM = 40;
-const fases = { 
-    1: { pares: 8, colunas: 4, tempo: 45, preview: 2 }, 
-    2: { pares: 10, colunas: 5, tempo: 60, preview: 3 }, 
-    3: { pares: 12, colunas: 6, tempo: 90, preview: 4 } 
-};
-let nomeUsuario = "", jogoAtual, primeira, segunda, bloqueado = true, paresRestantes, tempoRestante, timerInterval;
-
-// --- ÁUDIO ---
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function tocarSom(freq = 440, type = 'sine', duration = 0.1) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-    osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.05, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + duration);
-}
-
-// --- TECLADO ---
-function criarTeclado() {
-    const container = document.getElementById("keys-container");
-    const layout = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM", "← "];
-    layout.forEach(linha => {
-        const row = document.createElement("div"); row.className = "teclado-row";
-        const teclas = linha.includes(" ") ? ["←", "ESPAÇO"] : linha.split("");
-        teclas.forEach(t => {
-            const b = document.createElement("div"); b.className = "key " + (t.length > 1 ? "wide" : "");
-            b.id = "key-" + (t === "←" ? "Backspace" : t === "ESPAÇO" ? "Space" : t);
-            b.innerText = t; b.onclick = () => { tocarSom(550); digitar(t); };
-            row.appendChild(b);
-        });
-        container.appendChild(row);
-    });
-}
-
-function digitar(t) {
-    const inp = document.getElementById("nome-display");
-    if(t === "←") inp.value = inp.value.slice(0, -1);
-    else if(t === "ESPAÇO") { if(inp.value.length < 12) inp.value += " "; }
-    else if(inp.value.length < 12) inp.value += t;
-}
-
-// --- LÓGICA DE JOGO ---
-function salvarNome() { tocarSom(660); nomeUsuario = document.getElementById("nome-display").value.trim().toUpperCase() || "CONVIDADO"; finalizarLogin(); }
-function jogarSemNome() { tocarSom(330); nomeUsuario = "CONVIDADO"; finalizarLogin(); }
-function finalizarLogin() { document.getElementById("modal-nome").classList.add("hidden"); document.getElementById("header-player").innerText = `Jogador: ${nomeUsuario}`; voltarInicio(); }
-function voltarInicio() { clearInterval(timerInterval); document.querySelectorAll(".modal").forEach(m => m.classList.add("hidden")); document.getElementById("grid").classList.add("hidden"); document.getElementById("menu").classList.remove("hidden"); document.getElementById("status-bar").innerText = "Escolha um nível"; document.getElementById("status-bar").classList.remove("alerta"); }
-
-function comecarJogo(nivel) {
-    tocarSom(880); jogoAtual = { ...fases[nivel], nivel };
-    document.getElementById("menu").classList.add("hidden");
-    const grid = document.getElementById("grid"); grid.classList.remove("hidden");
-    grid.style.setProperty('--cols', jogoAtual.colunas); grid.innerHTML = "";
-    primeira = null; segunda = null; bloqueado = true;
-    paresRestantes = jogoAtual.pares; tempoRestante = jogoAtual.tempo;
-    
-    let pool = []; for (let i = MIN_IMAGEM; i <= MAX_IMAGEM; i++) pool.push(i);
-    pool.sort(() => Math.random() - 0.5);
-    const selecionadas = pool.slice(0, jogoAtual.pares).map(num => `imagens/${num}.jpg`);
-    let deck = [...selecionadas, ...selecionadas].sort(() => Math.random() - 0.5);
-
-    deck.forEach(url => {
+    deck.forEach(n => {
         const c = document.createElement("div"); c.className = "card flip";
-        c.innerHTML = `<div class="inner"><div class="front"></div><div class="back" style="background-image:url('${url}')"></div></div>`;
-        c.onclick = () => { tocarSom(440); clicarCarta(c, url); }; grid.appendChild(c);
+        c.innerHTML = `<div class="inner"><div class="front"></div><div class="back" style="background-image:url('imagens/${n}.jpg')"></div></div>`;
+        c.onclick = () => clicarCarta(c, n);
+        grid.appendChild(c);
     });
-    document.getElementById("status-bar").innerText = `Memorize as imagens! (${jogoAtual.preview}s)`;
-    setTimeout(() => { document.querySelectorAll(".card").forEach(c => c.classList.remove("flip")); bloqueado = false; iniciarCronometro(); }, jogoAtual.preview * 1000);
+
+    setTimeout(() => { document.querySelectorAll(".card").forEach(c => c.classList.remove("flip")); bloqueado = false; iniciarTimer(); }, 3000);
 }
 
-function iniciarCronometro() {
+function clicarCarta(c, n) {
+    if (bloqueado || c.classList.contains("flip") || c === primeira?.c) return;
+    c.classList.add("flip");
+    if (!primeira) { primeira = {c, n}; }
+    else {
+        segunda = {c, n}; bloqueado = true;
+        if (primeira.n === segunda.n) { 
+            paresRestantes--; primeira = null; segunda = null; bloqueado = false; 
+            if (paresRestantes === 0) { clearInterval(timerInterval); alert("Venceu!"); location.reload(); }
+        } else {
+            setTimeout(() => { primeira.c.classList.remove("flip"); segunda.c.classList.remove("flip"); primeira = null; segunda = null; bloqueado = false; }, 700);
+        }
+    }
+}
+
+function iniciarTimer() {
+    clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-        tempoRestante--; const bar = document.getElementById("status-bar");
-        bar.innerText = `Nível ${jogoAtual.nivel} — Tempo: ${tempoRestante}s`;
-        if(tempoRestante <= 10) bar.classList.add("alerta");
-        if(tempoRestante <= 0) { clearInterval(timerInterval); document.getElementById("modal-gameover").classList.remove("hidden"); }
+        tempoRestante--;
+        const s = document.getElementById("status-bar");
+        s.innerText = `Tempo: ${tempoRestante}s`;
+        if(tempoRestante <= 10) s.classList.add("alerta");
+        if(tempoRestante <= 0) { clearInterval(timerInterval); alert("Fim de tempo!"); location.reload(); }
     }, 1000);
 }
 
-function clicarCarta(card, img) {
-    if(bloqueado || card.classList.contains("flip") || card === primeira?.card) return;
-    card.classList.add("flip");
-    if(!primeira) { primeira = {card, img}; } 
-    else {
-        segunda = {card, img}; bloqueado = true;
-        if(primeira.img === segunda.img) {
-            tocarSom(1200, 'square', 0.2); document.getElementById("feedback").style.display = "block";
-            setTimeout(() => document.getElementById("feedback").style.display = "none", 800);
-            paresRestantes--; primeira = null; segunda = null; bloqueado = false;
-            if(paresRestantes === 0) finalizarFase();
-        } else {
-            setTimeout(() => { tocarSom(220, 'triangle', 0.2); primeira.card.classList.remove("flip"); segunda.card.classList.remove("flip"); primeira = null; segunda = null; bloqueado = false; }, 700);
-        }
-    }
-}
-
-function finalizarFase() {
-    clearInterval(timerInterval);
-    const btn = document.getElementById("btn-continuar");
-    document.getElementById("msg-vitoria").innerText = `Muito bem, ${nomeUsuario}!`;
-    if(jogoAtual.nivel === 3) { btn.classList.add("hidden"); lancarConfetes(); }
-    else { btn.classList.remove("hidden"); }
-    document.getElementById("modal-conclusao").classList.remove("hidden");
-}
-
-function lancarConfetes() {
-    for (let i = 0; i < 60; i++) {
-        const c = document.createElement("div"); c.className = "confetti";
-        c.style.left = Math.random() * 100 + "vw"; c.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-        c.style.animationDuration = (Math.random() * 2 + 3) + "s"; document.body.appendChild(c);
-        setTimeout(() => c.remove(), 5000);
-    }
-}
-
-function recomecarFase() { comecarJogo(jogoAtual.nivel); }
-function proximaFase() { document.getElementById("modal-conclusao").classList.add("hidden"); comecarJogo(jogoAtual.nivel + 1); }
-
 window.onload = () => {
     criarTeclado();
     setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
-        splash.style.opacity = '0';
-        setTimeout(() => splash.remove(), 600);
+        const s = document.getElementById('splash-screen');
+        if(s) { s.style.opacity = '0'; setTimeout(() => s.remove(), 600); }
     }, 2000);
 };
 </script>
 </body>
 </html>
-
-
