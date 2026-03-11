@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#006400">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="imagens/logo_app.jpg">
+    <link rel="apple-touch-icon" href="imagens/logo_app.png">
 
     <style>
         :root { 
@@ -78,7 +78,7 @@
 <body>
 
 <div id="splash-screen">
-    <img src="imagens/logo_app.jpg" alt="Logo MIS" class="splash-logo">
+    <img src="imagens/logo_app.png" alt="Logo MIS" class="splash-logo">
     <div class="loader-text">MIS CEARÁ</div>
 </div>
 
@@ -131,14 +131,22 @@
 <div id="feedback">Parabéns! Você acertou.</div>
 
 <script>
-// --- SERVICE WORKER ---
+// --- REGISTRO DO SERVICE WORKER (Correção de Escopo) ---
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(err => console.log("SW error", err));
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('SW registrado!', reg.scope))
+            .catch(err => console.log('Erro no SW:', err));
+    });
 }
 
 // --- CONFIG ---
 const MIN_IMAGEM = 2; const MAX_IMAGEM = 40;
-const fases = { 1: { pares: 8, colunas: 4, tempo: 45, preview: 2 }, 2: { pares: 10, colunas: 5, tempo: 60, preview: 3 }, 3: { pares: 12, colunas: 6, tempo: 90, preview: 4 } };
+const fases = { 
+    1: { pares: 8, colunas: 4, tempo: 45, preview: 2 }, 
+    2: { pares: 10, colunas: 5, tempo: 60, preview: 3 }, 
+    3: { pares: 12, colunas: 6, tempo: 90, preview: 4 } 
+};
 let nomeUsuario = "", jogoAtual, primeira, segunda, bloqueado = true, paresRestantes, tempoRestante, timerInterval;
 
 // --- ÁUDIO ---
@@ -176,19 +184,7 @@ function digitar(t) {
     else if(inp.value.length < 12) inp.value += t;
 }
 
-window.addEventListener('keydown', (e) => {
-    if (!document.getElementById("modal-nome").classList.contains("hidden")) {
-        let tID = null;
-        if (e.key === "Backspace") { digitar("←"); tID = "key-Backspace"; }
-        else if (e.key === " ") { digitar("ESPAÇO"); tID = "key-Space"; }
-        else if (e.key === "Enter") salvarNome();
-        else if (e.key === "Escape") jogarSemNome();
-        else if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) { const l = e.key.toUpperCase(); digitar(l); tID = "key-" + l; }
-        if (tID) { tocarSom(550); const el = document.getElementById(tID); if (el) { el.classList.add("active"); setTimeout(() => el.classList.remove("active"), 100); } }
-    }
-});
-
-// --- LÓGICA ---
+// --- LÓGICA DE JOGO ---
 function salvarNome() { tocarSom(660); nomeUsuario = document.getElementById("nome-display").value.trim().toUpperCase() || "CONVIDADO"; finalizarLogin(); }
 function jogarSemNome() { tocarSom(330); nomeUsuario = "CONVIDADO"; finalizarLogin(); }
 function finalizarLogin() { document.getElementById("modal-nome").classList.add("hidden"); document.getElementById("header-player").innerText = `Jogador: ${nomeUsuario}`; voltarInicio(); }
@@ -244,16 +240,15 @@ function clicarCarta(card, img) {
 
 function finalizarFase() {
     clearInterval(timerInterval);
-    const tit = document.getElementById("titulo-vitoria");
-    const msg = document.getElementById("msg-vitoria");
     const btn = document.getElementById("btn-continuar");
-    if(jogoAtual.nivel === 3) { tit.innerText = "⭐ CAMPEÃO DO MIS! ⭐"; msg.innerText = `Incrível, ${nomeUsuario}!`; btn.classList.add("hidden"); lancarConfetes(); }
-    else { tit.innerText = "🏆 Fase Concluída!"; msg.innerText = `Muito bem, ${nomeUsuario}!`; btn.classList.remove("hidden"); }
+    document.getElementById("msg-vitoria").innerText = `Muito bem, ${nomeUsuario}!`;
+    if(jogoAtual.nivel === 3) { btn.classList.add("hidden"); lancarConfetes(); }
+    else { btn.classList.remove("hidden"); }
     document.getElementById("modal-conclusao").classList.remove("hidden");
 }
 
 function lancarConfetes() {
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 60; i++) {
         const c = document.createElement("div"); c.className = "confetti";
         c.style.left = Math.random() * 100 + "vw"; c.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
         c.style.animationDuration = (Math.random() * 2 + 3) + "s"; document.body.appendChild(c);
@@ -269,10 +264,7 @@ window.onload = () => {
     setTimeout(() => {
         const splash = document.getElementById('splash-screen');
         splash.style.opacity = '0';
-        setTimeout(() => {
-            splash.remove();
-            document.getElementById("status-bar").innerText = "Por favor, identifique-se";
-        }, 600);
+        setTimeout(() => splash.remove(), 600);
     }, 2000);
 };
 </script>
