@@ -1,13 +1,10 @@
 {
   "name": "Jogo da Memória - MIS Ceará",
   "short_name": "Memória MIS",
-  "description": "Jogo da Memória oficial do Museu da Imagem e do Som do Ceará",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#006400",
-  "orientation": "any",
-  "scope": "./",
   "icons": [
     {
       "src": "imagens/logo_app.png",
