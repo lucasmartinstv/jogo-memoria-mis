@@ -4,6 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Jogo da Memória - MIS Ceará</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#006400">
+    <link rel="apple-touch-icon" href="imagens/logo_app.png">
+
+    <style>
+        :root { --primary: #006400; --secondary: #2196F3; --dark: #121212; }
+        body { margin: 0; background: var(--dark); color: white; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Splash Screen */
+        #splash-screen {
+            position: fixed; inset: 0; background: var(--dark); display: flex; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 9999; transition: opacity 0.6s ease;
+        }
+        .splash-logo { width: 220px; border-radius: 15px; margin-bottom: 20px; }
+        .loader-text { color: #27ae60; font-weight: bold; letter-spacing: 2px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        /* Resto do CSS simplificado para o exemplo - mantenha o seu CSS original abaixo */
+        header { padding: 15px; background: #1f1f1f; border-bottom: 2px solid #333; }
+        .grid { display: grid; gap: 10px; padding: 20px; justify-content: center; }
+        .card { width: 80px; height: 80px; background: #444; border-radius: 8px; } /* Exemplo */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div id="splash-screen">
+    <img src="imagens/logo_ini.jpg" alt="MIS Ceará" class="splash-logo">
+    <div class="loader-text">A CARREGAR...</div>
+</div>
+
+<header>
+    <div id="header-player">MIS CEARÁ</div>
+</header>
+
+<main class="main-content">
+    <div id="menu">
+        <button onclick="comecarJogo(1)">Nível 1</button>
+    </div>
+    <div id="grid" class="grid hidden"></div>
+</main>
+
+<script>
+// Registro do Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            console.log('PWA Pronto!');
+        });
+    });
+}
+
+// Lógica da Splash Screen
+window.onload = () => {
+    setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        splash.style.opacity = '0';
+        setTimeout(() => splash.remove(), 600);
+    }, 2500); // Exibe por 2.5 segundos
+};
+
+// --- Insira aqui o restante da sua lógica de jogo (clicarCarta, comecarJogo, etc) ---
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jogo da Memória - MIS Ceará</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#006400">
@@ -270,3 +341,4 @@ window.onload = () => {
 </script>
 </body>
 </html>
+
