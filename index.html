@@ -2,14 +2,9 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Jogo da Memória - MIS Ceará</title>
     
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#006400">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="imagens/logo_app.png">
-
     <style>
         :root { 
             --primary: #006400; --secondary: #2196F3; --success: #27ae60; 
@@ -21,71 +16,69 @@
         body { 
             font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--dark); 
             color: white; text-align: center; display: flex; flex-direction: column; 
-            height: 100vh; width: 100vw; overflow: hidden; user-select: none;
+            height: 100vh; width: 100vw; overflow: hidden;
         }
 
-        /* Splash Screen - Correção para sumir totalmente */
+        /* Splash Screen */
         #splash-screen {
             position: fixed; inset: 0; background: #121212; display: flex; 
             flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 9999; transition: opacity 0.5s ease, visibility 0.5s;
+            z-index: 9999;
         }
-        .splash-logo { width: 20vw; max-width: 200px; border-radius: 20px; margin-bottom: 20px; }
 
-        /* Cabeçalho */
         header { height: 12vh; background: #1f1f1f; border-bottom: 2px solid #333; display: flex; flex-direction: column; justify-content: center; flex-shrink: 0; }
-        .header-museum { font-size: 1.5vh; opacity: 0.7; }
         .header-player { font-size: 3vh; color: var(--secondary); font-weight: bold; }
 
-        /* Área Principal */
         .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2vh; overflow: hidden; }
 
         .grid { 
-            display: grid; gap: 1.5vh; 
-            height: 100%; max-height: 75vh;
+            display: grid; gap: 1.5vh; height: 100%; max-height: 75vh;
             grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); 
             aspect-ratio: var(--cols) / calc((var(--total-pares) * 2) / var(--cols));
         }
 
-        .card { width: 100%; height: 100%; aspect-ratio: 1/1; perspective: 1000px; }
+        .card { width: 100%; height: 100%; perspective: 1000px; }
         .inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
         .card.flip .inner { transform: rotateY(180deg); }
         .front, .back { position: absolute; width: 100%; height: 100%; border-radius: 10px; backface-visibility: hidden; background-size: cover; background-position: center; }
         .front { background-image: url('imagens/capa.jpg'); border: 2px solid #444; }
         .back { transform: rotateY(180deg); border: 2px solid var(--primary); }
 
-        /* MODAL DE NOME - Ajustado para TV Konka */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: flex; align-items: center; justify-content: center; z-index: 5000; }
-        .box { 
-            background: #222; padding: 3vh; border-radius: 15px; 
-            width: 85vw; max-height: 90vh; /* Não deixa extrapolar a tela */
-            display: flex; flex-direction: column; gap: 1.5vh;
+        /* Modais - Z-index alto para garantir visibilidade */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 5000; visibility: visible; opacity: 1; }
+        .box { background: #222; padding: 3vh; border-radius: 15px; width: 85vw; max-width: 800px; display: flex; flex-direction: column; gap: 1.5vh; border: 2px solid #444; }
+
+        /* Feedback "Você Acertou" - Z-index mais alto que os modais */
+        #feedback { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: var(--success); color: white; padding: 3vh 6vh; 
+            border-radius: 50px; font-size: 5vh; font-weight: bold; 
+            z-index: 10000; display: none; pointer-events: none;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
         }
-        #nome-display { font-size: 4vh; padding: 1.5vh; background: #000; border: 2px solid var(--secondary); color: white; text-align: center; border-radius: 8px; width: 100%; }
 
-        /* Teclado - Redimensionado */
+        /* Teclado */
         .teclado-row { display: flex; justify-content: center; gap: 0.5vw; }
-        .key { flex: 1; padding: 2vh 0; background: #333; border-radius: 5px; font-weight: bold; font-size: 2.2vh; border: 1px solid #444; color: white; }
-        .key.active { background: var(--primary); }
-        .key.wide { flex: 2; background: #444; }
-
-        .btn-group { display: flex; gap: 10px; }
-        button { flex: 1; padding: 2vh; font-size: 2.5vh; font-weight: bold; border-radius: 10px; border: none; color: white; cursor: pointer; }
+        .key { flex: 1; padding: 2vh 0; background: #333; border-radius: 5px; font-size: 2.2vh; border: 1px solid #444; color: white; cursor: pointer; }
         
-        .hidden { display: none !important; visibility: hidden !important; }
+        button { padding: 2vh; font-size: 2.5vh; font-weight: bold; border-radius: 10px; border: none; color: white; cursor: pointer; width: 100%; }
+        
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="splash-screen">
-    <img src="imagens/logo_ini.jpg" alt="Logo MIS" class="splash-logo">
+    <img src="imagens/logo_ini.jpg" style="width: 200px; border-radius: 20px; margin-bottom: 20px;">
     <div style="font-size: 2vh; color: var(--success);">CARREGANDO...</div>
 </div>
 
+<div id="feedback">VOCÊ ACERTOU!</div>
+
 <header>
-    <div class="header-museum">JOGO DA MEMÓRIA - MIS CEARÁ</div>
+    <div style="font-size: 1.5vh; opacity: 0.7;">MIS CEARÁ</div>
     <div id="header-player" class="header-player">IDENTIFIQUE-SE</div>
-    <div id="status-bar" style="font-size: 2vh;"></div>
+    <div id="status-bar" style="font-size: 2vh; min-height: 1.2em;"></div>
 </header>
 
 <div class="main-content">
@@ -103,9 +96,9 @@
 <div id="modal-nome" class="modal">
     <div class="box">
         <h2 style="font-size: 3vh;">Digite seu Nome</h2>
-        <input type="text" id="nome-display" maxlength="12" readonly>
+        <input type="text" id="nome-display" style="font-size: 4vh; padding: 1.5vh; background: #000; border: 2px solid var(--secondary); color: white; text-align: center;" readonly>
         <div id="keys-container"></div>
-        <div class="btn-group">
+        <div style="display: flex; gap: 10px;">
             <button onclick="salvarNome()" style="background: var(--success);">CONFIRMAR</button>
             <button onclick="jogarSemNome()" style="background: #555;">PULAR</button>
         </div>
@@ -114,7 +107,7 @@
 
 <div id="modal-conclusao" class="modal hidden">
     <div class="box">
-        <h2 id="titulo-vitoria">Vitória!</h2>
+        <h2 id="titulo-vitoria" style="color: var(--success); font-size: 4vh;">🏆 Vitória!</h2>
         <p id="msg-vitoria" style="font-size: 3vh;"></p>
         <button id="btn-continuar" onclick="proximaFase()" style="background: var(--success);">PRÓXIMA FASE</button>
         <button onclick="voltarInicio()" style="background: #444;">MENU</button>
@@ -123,7 +116,7 @@
 
 <div id="modal-gameover" class="modal hidden">
     <div class="box">
-        <h2 style="color: var(--danger);">TEMPO ESGOTADO</h2>
+        <h2 style="color: var(--danger); font-size: 4vh;">⏰ TEMPO ESGOTADO</h2>
         <button onclick="recomecarFase()" style="background: var(--secondary);">TENTAR NOVAMENTE</button>
         <button onclick="voltarInicio()" style="background: #444;">SAIR</button>
     </div>
@@ -132,17 +125,7 @@
 <script>
 const MIN_IMAGEM = 2, MAX_IMAGEM = 40;
 const fases = { 1: { pares: 8, colunas: 4, tempo: 45, preview: 2 }, 2: { pares: 10, colunas: 5, tempo: 60, preview: 3 }, 3: { pares: 12, colunas: 6, tempo: 90, preview: 4 } };
-let nomeUsuario = "", jogoAtual, primeira, segunda, bloqueado = true, paresRestantes, tempoRestante, timerInterval;
-
-// Audio context
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function tocarSom(f=440, t='sine', d=0.1) {
-    if(audioCtx.state==='suspended') audioCtx.resume();
-    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-    o.type=t; o.frequency.value=f; g.gain.value=0.05;
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start(); o.stop(audioCtx.currentTime+d);
-}
+let nomeUsuario = "", jogoAtual, primeira, segunda, bloqueado = true, paresRestantes, tempoRestante, timerInterval = null;
 
 function criarTeclado() {
     const container = document.getElementById("keys-container");
@@ -152,9 +135,10 @@ function criarTeclado() {
         const row = document.createElement("div"); row.className = "teclado-row";
         const teclas = linha.includes(" ") ? ["←", "ESPAÇO"] : linha.split("");
         teclas.forEach(t => {
-            const b = document.createElement("div"); b.className = "key " + (t.length > 1 ? "wide" : "");
+            const b = document.createElement("div"); b.className = "key";
+            if(t.length > 1) b.style.flex = "2";
             b.innerText = t; 
-            b.onclick = () => { tocarSom(550); digitar(t === "←" ? "BS" : t === "ESPAÇO" ? "SP" : t); };
+            b.onclick = () => digitar(t === "←" ? "BS" : t === "ESPAÇO" ? "SP" : t);
             row.appendChild(b);
         });
         container.appendChild(row);
@@ -171,15 +155,41 @@ function digitar(t) {
 function salvarNome() { nomeUsuario = document.getElementById("nome-display").value.trim() || "VISITANTE"; finalizarLogin(); }
 function jogarSemNome() { nomeUsuario = "VISITANTE"; finalizarLogin(); }
 function finalizarLogin() { document.getElementById("modal-nome").classList.add("hidden"); document.getElementById("header-player").innerText = `JOGADOR: ${nomeUsuario}`; voltarInicio(); }
-function voltarInicio() { clearInterval(timerInterval); document.querySelectorAll(".modal").forEach(m => { if(m.id !== "modal-nome") m.classList.add("hidden")}); document.getElementById("grid").classList.add("hidden"); document.getElementById("menu").classList.remove("hidden"); }
+
+function fecharTodosModais() {
+    document.getElementById("modal-conclusao").classList.add("hidden");
+    document.getElementById("modal-gameover").classList.add("hidden");
+    document.getElementById("modal-nome").classList.add("hidden");
+}
+
+function voltarInicio() { 
+    clearInterval(timerInterval); 
+    timerInterval = null;
+    fecharTodosModais();
+    document.getElementById("grid").classList.add("hidden"); 
+    document.getElementById("menu").classList.remove("hidden"); 
+    document.getElementById("status-bar").innerText = "";
+}
 
 function comecarJogo(n) {
+    // Reset crítico de timers para o UC Browser
+    if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    
+    fecharTodosModais();
     jogoAtual = {...fases[n], nivel: n};
     document.getElementById("menu").classList.add("hidden");
-    const g = document.getElementById("grid"); g.classList.remove("hidden");
-    g.style.setProperty('--cols', jogoAtual.colunas); g.style.setProperty('--total-pares', jogoAtual.pares);
+    
+    const g = document.getElementById("grid"); 
+    g.classList.remove("hidden");
+    g.style.setProperty('--cols', jogoAtual.colunas); 
+    g.style.setProperty('--total-pares', jogoAtual.pares);
     g.innerHTML = "";
-    paresRestantes = jogoAtual.pares; tempoRestante = jogoAtual.tempo; bloqueado = true;
+    
+    paresRestantes = jogoAtual.pares; 
+    tempoRestante = jogoAtual.tempo; 
+    bloqueado = true;
+    primeira = null; 
+    segunda = null;
     
     let p = []; for(let i=MIN_IMAGEM; i<=MAX_IMAGEM; i++) p.push(i);
     p.sort(() => Math.random()-0.5);
@@ -192,51 +202,64 @@ function comecarJogo(n) {
         c.onclick = () => clicarCarta(c, url); g.appendChild(c);
     });
 
-    setTimeout(() => { document.querySelectorAll(".card").forEach(c => c.classList.remove("flip")); bloqueado = false; iniciarCronometro(); }, jogoAtual.preview * 1000);
+    document.getElementById("status-bar").innerText = "MEMORIZE!";
+    setTimeout(() => { 
+        document.querySelectorAll(".card").forEach(c => c.classList.remove("flip")); 
+        bloqueado = false; 
+        iniciarCronometro(); 
+    }, jogoAtual.preview * 1000);
 }
 
 function iniciarCronometro() {
-    clearInterval(timerInterval);
+    if(timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
         tempoRestante--; 
         document.getElementById("status-bar").innerText = `TEMPO: ${tempoRestante}s`;
-        if(tempoRestante <= 0) { clearInterval(timerInterval); document.getElementById("modal-gameover").classList.remove("hidden"); }
+        if(tempoRestante <= 0) { 
+            clearInterval(timerInterval); 
+            timerInterval = null;
+            document.getElementById("modal-gameover").classList.remove("hidden"); 
+        }
     }, 1000);
 }
 
 function clicarCarta(card, img) {
     if(bloqueado || card.classList.contains("flip") || card === primeira?.card) return;
-    tocarSom(440); card.classList.add("flip");
+    card.classList.add("flip");
     if(!primeira) { primeira = {card, img}; } 
     else {
         segunda = {card, img}; bloqueado = true;
         if(primeira.img === segunda.img) {
-            tocarSom(1000, 'square'); paresRestantes--; primeira = null; segunda = null; bloqueado = false;
+            // Mostrar Feedback "Você Acertou"
+            const f = document.getElementById("feedback");
+            f.style.display = "block";
+            setTimeout(() => { f.style.display = "none"; }, 800);
+
+            paresRestantes--; primeira = null; segunda = null; bloqueado = false;
             if(paresRestantes === 0) finalizarFase();
         } else {
-            setTimeout(() => { primeira.card.classList.remove("flip"); segunda.card.classList.remove("flip"); primeira = null; segunda = null; bloqueado = false; }, 700);
+            setTimeout(() => { 
+                primeira.card.classList.remove("flip"); 
+                segunda.card.classList.remove("flip"); 
+                primeira = null; segunda = null; bloqueado = false; 
+            }, 700);
         }
     }
 }
 
 function finalizarFase() {
-    clearInterval(timerInterval);
-    document.getElementById("msg-vitoria").innerText = `Parabéns, ${nomeUsuario}!`;
+    if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    document.getElementById("msg-vitoria").innerText = `Muito bem, ${nomeUsuario}!`;
     document.getElementById("modal-conclusao").classList.remove("hidden");
 }
 
 function recomecarFase() { comecarJogo(jogoAtual.nivel); }
-function proximaFase() { document.getElementById("modal-conclusao").classList.add("hidden"); comecarJogo(jogoAtual.nivel + 1); }
+function proximaFase() { comecarJogo(jogoAtual.nivel + 1); }
 
 window.onload = () => {
     criarTeclado();
     setTimeout(() => {
-        const s = document.getElementById('splash-screen');
-        s.style.opacity = '0';
-        setTimeout(() => { 
-            s.style.display = 'none'; // Garante que sai do fluxo da tela
-            s.classList.add("hidden");
-        }, 500);
+        document.getElementById('splash-screen').style.display = 'none';
     }, 2000);
 };
 </script>
