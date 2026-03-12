@@ -19,29 +19,25 @@
             height: 100vh; width: 100vw; overflow: hidden;
         }
 
-        /* Splash Screen - Ajuste para TV Konka */
+        /* Splash Screen - Ajuste de visibilidade */
         #splash-screen {
             position: fixed; inset: 0; background: #121212; display: flex; 
             flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 10001; /* Acima de tudo */
+            z-index: 10001;
         }
-        .splash-logo { width: 250px; height: auto; border-radius: 20px; margin-bottom: 20px; border: 2px solid #333; }
+        .splash-logo { width: 300px; height: auto; border-radius: 20px; margin-bottom: 20px; border: 2px solid #333; background: #121212; }
 
-        /* Cabeçalho com Botão de Reset */
         header { 
             height: 12vh; background: #1f1f1f; border-bottom: 2px solid #333; 
             display: flex; align-items: center; justify-content: space-between; 
             padding: 0 4vw; flex-shrink: 0; 
         }
-        .header-info { text-align: left; }
         .header-player { font-size: 3vh; color: var(--secondary); font-weight: bold; }
         
-        /* Botão Reiniciar Discreto */
         .btn-reset-top {
             background: #333; color: #fff; border: 1px solid #555; padding: 1vh 2vh;
-            border-radius: 5px; font-size: 1.8vh; cursor: pointer; font-weight: bold;
+            border-radius: 5px; font-size: 1.8vh; cursor: pointer;
         }
-        .btn-reset-top:active { background: var(--danger); }
 
         .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2vh; overflow: hidden; }
 
@@ -58,21 +54,24 @@
         .front { background-image: url('imagens/capa.jpg'); border: 2px solid #444; }
         .back { transform: rotateY(180deg); border: 2px solid var(--primary); }
 
-        /* Modais */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 9000; }
-        .box { background: #222; padding: 3vh; border-radius: 15px; width: 85vw; max-width: 800px; display: flex; flex-direction: column; gap: 1.5vh; border: 2px solid #444; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.96); display: flex; align-items: center; justify-content: center; z-index: 9000; }
+        .box { background: #222; padding: 4vh; border-radius: 15px; width: 85vw; max-width: 800px; border: 2px solid #444; }
 
         #feedback { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             background: var(--success); color: white; padding: 3vh 6vh; 
             border-radius: 50px; font-size: 5vh; font-weight: bold; 
-            z-index: 10000; display: none; pointer-events: none;
+            z-index: 10000; display: none;
         }
 
-        .teclado-row { display: flex; justify-content: center; gap: 0.5vw; }
-        .key { flex: 1; padding: 2.2vh 0; background: #333; border-radius: 5px; font-size: 2.2vh; border: 1px solid #444; color: white; cursor: pointer; }
+        /* Animação de Confetes */
+        .confetti { position: fixed; width: 10px; height: 10px; z-index: 9999; animation: fall linear forwards; }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+
+        .teclado-row { display: flex; justify-content: center; gap: 0.5vw; margin-bottom: 1vh; }
+        .key { flex: 1; padding: 2.5vh 0; background: #333; border-radius: 5px; font-size: 2.2vh; border: 1px solid #444; color: white; cursor: pointer; }
         
-        button { padding: 2.5vh; font-size: 2.5vh; font-weight: bold; border-radius: 10px; border: none; color: white; cursor: pointer; }
+        button { padding: 2.5vh; font-size: 2.5vh; font-weight: bold; border-radius: 10px; border: none; color: white; cursor: pointer; width: 100%; margin-top: 1vh; }
         
         .hidden { display: none !important; }
     </style>
@@ -80,28 +79,28 @@
 <body>
 
 <div id="splash-screen">
-    <img src="imagens/logo_ini.jpg" class="splash-logo" onerror="this.src='https://via.placeholder.com/250x250?text=MIS+CEARA'">
-    <div style="font-size: 2.5vh; color: var(--success); font-weight: bold; letter-spacing: 2px;">CARREGANDO...</div>
+    <img src="imagens/logo_ini.jpg" class="splash-logo" alt="Logo MIS" onerror="console.log('Erro ao carregar logo_ini.jpg')">
+    <div style="font-size: 2.5vh; color: var(--success); font-weight: bold;">CARREGANDO...</div>
 </div>
 
 <div id="feedback">VOCÊ ACERTOU!</div>
 
 <header>
-    <div class="header-info">
+    <div style="text-align: left;">
         <div style="font-size: 1.5vh; opacity: 0.7;">MIS CEARÁ</div>
         <div id="header-player" class="header-player">IDENTIFIQUE-SE</div>
     </div>
-    <div id="status-bar" style="font-size: 2.5vh; font-weight: bold; color: var(--secondary);"></div>
-    <button class="btn-reset-top" onclick="rebootTotal()">REINICIAR TUDO</button>
+    <div id="status-bar" style="font-size: 2.5vh; font-weight: bold;"></div>
+    <button class="btn-reset-top" onclick="location.reload()">REINICIAR</button>
 </header>
 
 <div class="main-content">
     <div id="menu" class="hidden">
-        <h2 style="margin-bottom: 2vh; font-size: 4vh;">Escolha o Nível</h2>
+        <h2 style="margin-bottom: 3vh; font-size: 4vh;">Escolha o Nível</h2>
         <div style="display: flex; flex-direction: column; width: 350px; margin: auto; gap: 15px;">
-            <button onclick="comecarJogo(1)" style="background: var(--primary);">NÍVEL 1 - FÁCIL</button>
-            <button onclick="comecarJogo(2)" style="background: var(--primary);">NÍVEL 2 - MÉDIO</button>
-            <button onclick="comecarJogo(3)" style="background: var(--primary);">NÍVEL 3 - DIFÍCIL</button>
+            <button onclick="comecarJogo(1)" style="background: var(--primary);">NÍVEL 1</button>
+            <button onclick="comecarJogo(2)" style="background: var(--primary);">NÍVEL 2</button>
+            <button onclick="comecarJogo(3)" style="background: var(--primary);">NÍVEL 3</button>
         </div>
     </div>
     <div id="grid" class="grid hidden"></div>
@@ -109,8 +108,8 @@
 
 <div id="modal-nome" class="modal">
     <div class="box">
-        <h2 style="font-size: 3.5vh;">Digite seu Nome</h2>
-        <input type="text" id="nome-display" style="font-size: 5vh; padding: 1.5vh; background: #000; border: 2px solid var(--secondary); color: white; text-align: center; border-radius: 10px;" readonly>
+        <h2 style="font-size: 3.5vh; margin-bottom: 2vh;">Digite seu Nome</h2>
+        <input type="text" id="nome-display" style="font-size: 5vh; padding: 1.5vh; background: #000; border: 2px solid var(--secondary); color: white; text-align: center; width: 100%; margin-bottom: 2vh;" readonly>
         <div id="keys-container"></div>
         <div style="display: flex; gap: 15px;">
             <button onclick="salvarNome()" style="background: var(--success); flex: 2;">CONFIRMAR</button>
@@ -121,9 +120,9 @@
 
 <div id="modal-conclusao" class="modal hidden">
     <div class="box">
-        <h2 id="titulo-vitoria" style="color: var(--success); font-size: 5vh;">🏆 VITÓRIA!</h2>
-        <p id="msg-vitoria" style="font-size: 3.5vh;"></p>
-        <button id="btn-continuar" onclick="proximaFase()" style="background: var(--success);">PRÓXIMA FASE</button>
+        <h2 id="titulo-vitoria" style="font-size: 5vh; margin-bottom: 2vh;">🏆 VITÓRIA!</h2>
+        <p id="msg-vitoria" style="font-size: 3vh; margin-bottom: 3vh;"></p>
+        <button id="btn-proxima-fase" onclick="proximaFase()" style="background: var(--success);">PRÓXIMA FASE</button>
         <button onclick="voltarInicio()" style="background: #444;">MENU PRINCIPAL</button>
     </div>
 </div>
@@ -131,7 +130,6 @@
 <div id="modal-gameover" class="modal hidden">
     <div class="box">
         <h2 style="color: var(--danger); font-size: 5vh;">⏰ TEMPO ESGOTADO</h2>
-        <p style="font-size: 3vh;">Não foi dessa vez!</p>
         <button onclick="recomecarFase()" style="background: var(--secondary);">TENTAR NOVAMENTE</button>
         <button onclick="voltarInicio()" style="background: #444;">SAIR</button>
     </div>
@@ -141,13 +139,6 @@
 const MIN_IMAGEM = 2, MAX_IMAGEM = 40;
 const fases = { 1: { pares: 8, colunas: 4, tempo: 45, preview: 2 }, 2: { pares: 10, colunas: 5, tempo: 60, preview: 3 }, 3: { pares: 12, colunas: 6, tempo: 90, preview: 4 } };
 let nomeUsuario = "", jogoAtual, primeira, segunda, bloqueado = true, paresRestantes, tempoRestante, timerInterval = null;
-
-// Função para Reiniciar o Jogo do Zero (Reset Total)
-function rebootTotal() {
-    if(confirm("Deseja reiniciar o jogo e trocar de jogador?")) {
-        location.reload(); 
-    }
-}
 
 function criarTeclado() {
     const container = document.getElementById("keys-container");
@@ -179,21 +170,19 @@ function jogarSemNome() { nomeUsuario = "VISITANTE"; finalizarLogin(); }
 function finalizarLogin() { document.getElementById("modal-nome").classList.add("hidden"); document.getElementById("header-player").innerText = `JOGADOR: ${nomeUsuario}`; voltarInicio(); }
 
 function fecharTodosModais() {
-    document.getElementById("modal-conclusao").classList.add("hidden");
-    document.getElementById("modal-gameover").classList.add("hidden");
-    document.getElementById("modal-nome").classList.add("hidden");
+    document.querySelectorAll(".modal").forEach(m => m.classList.add("hidden"));
 }
 
 function voltarInicio() { 
-    if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    if(timerInterval) clearInterval(timerInterval);
     fecharTodosModais();
     document.getElementById("grid").classList.add("hidden"); 
     document.getElementById("menu").classList.remove("hidden"); 
-    document.getElementById("status-bar").innerText = "ESCOLHA O NÍVEL";
+    document.getElementById("status-bar").innerText = "";
 }
 
 function comecarJogo(n) {
-    if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    if(timerInterval) clearInterval(timerInterval);
     fecharTodosModais();
     jogoAtual = {...fases[n], nivel: n};
     document.getElementById("menu").classList.add("hidden");
@@ -202,9 +191,7 @@ function comecarJogo(n) {
     g.style.setProperty('--cols', jogoAtual.colunas); 
     g.style.setProperty('--total-pares', jogoAtual.pares);
     g.innerHTML = "";
-    paresRestantes = jogoAtual.pares; 
-    tempoRestante = jogoAtual.tempo; 
-    bloqueado = true;
+    paresRestantes = jogoAtual.pares; tempoRestante = jogoAtual.tempo; bloqueado = true;
     primeira = null; segunda = null;
     
     let p = []; for(let i=MIN_IMAGEM; i<=MAX_IMAGEM; i++) p.push(i);
@@ -218,22 +205,18 @@ function comecarJogo(n) {
         c.onclick = () => clicarCarta(c, url); g.appendChild(c);
     });
 
-    document.getElementById("status-bar").innerText = "MEMORIZE!";
     setTimeout(() => { 
         document.querySelectorAll(".card").forEach(c => c.classList.remove("flip")); 
-        bloqueado = false; 
-        iniciarCronometro(); 
+        bloqueado = false; iniciarCronometro(); 
     }, jogoAtual.preview * 1000);
 }
 
 function iniciarCronometro() {
-    if(timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
         tempoRestante--; 
         document.getElementById("status-bar").innerText = `TEMPO: ${tempoRestante}s`;
         if(tempoRestante <= 0) { 
-            clearInterval(timerInterval); 
-            timerInterval = null;
+            clearInterval(timerInterval);
             document.getElementById("modal-gameover").classList.remove("hidden"); 
         }
     }, 1000);
@@ -262,9 +245,37 @@ function clicarCarta(card, img) {
 }
 
 function finalizarFase() {
-    if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-    document.getElementById("msg-vitoria").innerText = `INCRÍVEL, ${nomeUsuario}!`;
-    document.getElementById("modal-conclusao").classList.remove("hidden");
+    if(timerInterval) clearInterval(timerInterval);
+    const modal = document.getElementById("modal-conclusao");
+    const btnProxima = document.getElementById("btn-proxima-fase");
+    const titulo = document.getElementById("titulo-vitoria");
+    const msg = document.getElementById("msg-vitoria");
+
+    if(jogoAtual.nivel === 3) {
+        titulo.innerText = "⭐ DESAFIO CONCLUÍDO! ⭐";
+        titulo.style.color = "#f1c40f";
+        msg.innerText = `Parabéns, ${nomeUsuario}!\nVocê completou todos os níveis do MIS Ceará!`;
+        btnProxima.classList.add("hidden"); // ESCONDE O BOTÃO NA FASE 3
+        lancarConfetes();
+    } else {
+        titulo.innerText = "🏆 VITÓRIA!";
+        titulo.style.color = var(--success);
+        msg.innerText = `Muito bem, ${nomeUsuario}! Pronto para o próximo?`;
+        btnProxima.classList.remove("hidden");
+    }
+    modal.classList.remove("hidden");
+}
+
+function lancarConfetes() {
+    for (let i = 0; i < 80; i++) {
+        const c = document.createElement("div"); c.className = "confetti";
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        c.style.animationDuration = (Math.random() * 2 + 2) + "s";
+        c.style.opacity = Math.random();
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 4000);
+    }
 }
 
 function recomecarFase() { comecarJogo(jogoAtual.nivel); }
@@ -272,11 +283,10 @@ function proximaFase() { comecarJogo(jogoAtual.nivel + 1); }
 
 window.onload = () => {
     criarTeclado();
-    // Splash screen com tempo maior para garantir carregamento no UC
     setTimeout(() => {
         const s = document.getElementById('splash-screen');
         if(s) s.style.display = 'none';
-    }, 3000);
+    }, 2500);
 };
 </script>
 </body>
