@@ -11,56 +11,67 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="imagens/logo_app.png">
 
-    <style>
-        :root { 
-            --primary: #006400; --secondary: #2196F3; --success: #27ae60; 
-            --danger: #e74c3c; --dark: #121212; --card-gap: 12px;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--dark); 
-            color: white; text-align: center; display: flex; flex-direction: column; 
-            height: 100vh; overflow: hidden; user-select: none;
-        }
-        #splash-screen {
-            position: fixed; inset: 0; background: #121212; display: flex; 
-            flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 9999; transition: opacity 0.6s ease;
-        }
-        .splash-logo { width: 180px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 0 30px rgba(0,100,0,0.3); }
-        .loader-text { color: var(--success); font-weight: bold; letter-spacing: 3px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        header { padding: 15px; background: #1f1f1f; border-bottom: 2px solid #333; flex-shrink: 0; z-index: 10; }
-        .header-museum { font-size: 0.8em; opacity: 0.7; letter-spacing: 1px; margin-bottom: 4px; }
-        .header-player { font-size: 1.3em; color: var(--secondary); font-weight: bold; }
-        #status-bar { margin-top: 5px; font-size: 1em; min-height: 1.2em; transition: 0.3s; }
-        #status-bar.alerta { color: var(--danger); font-weight: bold; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
-        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 20px; }
-        .grid { 
-            display: grid; gap: var(--card-gap); width: 100%; max-width: 1000px; max-height: 75vh; margin: auto;
-            grid-template-columns: repeat(var(--cols, 4), minmax(60px, 1fr)); 
-        }
-        .card { width: 100%; aspect-ratio: 1/1; perspective: 1000px; cursor: pointer; }
-        .inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
-        .card.flip .inner { transform: rotateY(180deg); }
-        .front, .back { position: absolute; width: 100%; height: 100%; border-radius: 8px; backface-visibility: hidden; background-size: cover; background-position: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .front { background-image: url('imagens/capa.jpg'); border: 2px solid #444; }
-        .back { transform: rotateY(180deg); border: 2px solid var(--primary); }
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
-        .box { background: #222; padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; border: 2px solid #444; }
-        #nome-display { font-size: 24px; margin-bottom: 15px; background: #000; border: 2px solid var(--secondary); color: white; text-align: center; width: 100%; padding: 12px; border-radius: 8px; outline: none; text-transform: uppercase; }
-        .teclado-row { display: flex; justify-content: center; gap: 5px; margin-bottom: 8px; }
-        .key { flex: 1; padding: 15px 0; background: #333; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; border: 1px solid #444; transition: 0.1s; }
-        .key.active, .key:active { background: var(--primary); transform: translateY(2px); border-color: var(--success); }
-        .key.wide { flex: 2; background: #555; }
-        button { padding: 15px 20px; font-size: 16px; cursor: pointer; border: none; background: var(--primary); color: white; border-radius: 8px; margin: 8px 0; width: 100%; font-weight: bold; transition: 0.2s; }
-        button:active { transform: scale(0.98); filter: brightness(1.2); }
-        #feedback { position: fixed; top: 25%; left: 50%; transform: translate(-50%, -50%); background: var(--secondary); padding: 15px 30px; border-radius: 50px; display: none; z-index: 2000; font-weight: bold; pointer-events: none; }
-        .confetti { position: fixed; width: 10px; height: 10px; z-index: 3000; animation: fall linear forwards; }
-        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } }
-        .hidden { display: none !important; }
-    </style>
+<style>
+    :root { 
+        --primary: #006400; --secondary: #2196F3; --success: #27ae60; 
+        --danger: #e74c3c; --dark: #121212; 
+        /* Ajuste do Gap para telas grandes */
+        --card-gap: 1.5vh; 
+    }
+    
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body { 
+        margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--dark); 
+        color: white; text-align: center; display: flex; flex-direction: column; 
+        height: 100vh; width: 100vw; overflow: hidden; user-select: none;
+    }
+
+    /* Splash Screen */
+    #splash-screen {
+        position: fixed; inset: 0; background: #121212; display: flex; 
+        flex-direction: column; align-items: center; justify-content: center; 
+        z-index: 9999; transition: opacity 0.6s ease;
+    }
+    .splash-logo { width: 15vw; max-width: 250px; border-radius: 25px; margin-bottom: 20px; }
+
+    /* Cabeçalho Fixo */
+    header { height: 12vh; display: flex; flex-direction: column; justify-content: center; background: #1f1f1f; border-bottom: 2px solid #333; flex-shrink: 0; }
+    .header-museum { font-size: 1.5vh; opacity: 0.7; letter-spacing: 2px; }
+    .header-player { font-size: 3vh; color: var(--secondary); font-weight: bold; }
+    #status-bar { font-size: 2vh; margin-top: 5px; }
+
+    /* Área do Jogo Responsiva para Touch de Grande Formato */
+    .main-content { 
+        flex: 1; display: flex; align-items: center; justify-content: center; 
+        padding: 2vh; overflow: hidden; 
+    }
+
+    .grid { 
+        display: grid; gap: var(--card-gap); 
+        width: auto; height: 100%; max-height: 75vh;
+        /* Cálculo para manter as cartas sempre quadradas e visíveis na TV */
+        aspect-ratio: var(--cols) / calc(var(--pares) * 2 / var(--cols));
+        grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); 
+        margin: auto;
+    }
+
+    .card { width: 100%; height: 100%; aspect-ratio: 1/1; perspective: 1000px; }
+    .inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
+    .card.flip .inner { transform: rotateY(180deg); }
+    .front, .back { position: absolute; width: 100%; height: 100%; border-radius: 12px; backface-visibility: hidden; background-size: cover; background-position: center; }
+    .front { background-image: url('imagens/capa.jpg'); border: 3px solid #444; }
+    .back { transform: rotateY(180deg); border: 3px solid var(--primary); }
+
+    /* Ajuste do Teclado para Touch Screen de 75" */
+    .box { background: #222; padding: 2vh; border-radius: 15px; width: 90vw; max-width: 800px; }
+    .key { padding: 2.5vh 0; font-size: 2.5vh; }
+    #nome-display { font-size: 4vh; height: 8vh; }
+    
+    button { padding: 2vh; font-size: 2.5vh; }
+
+    .hidden { display: none !important; }
+</style>
 </head>
 <body>
 
@@ -252,3 +263,4 @@ window.onload = () => {
 </script>
 </body>
 </html>
+
