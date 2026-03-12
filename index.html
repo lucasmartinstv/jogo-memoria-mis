@@ -2,114 +2,99 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Jogo da Memória - MIS Ceará</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#006400">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="imagens/logo_app.png">
 
     <style>
         :root { 
             --primary: #006400; --secondary: #2196F3; --success: #27ae60; 
             --danger: #e74c3c; --dark: #121212; 
-            --card-gap: 1.5vh; 
         }
         
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
         body { 
-            margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--dark); 
+            font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--dark); 
             color: white; text-align: center; display: flex; flex-direction: column; 
             height: 100vh; width: 100vw; overflow: hidden; user-select: none;
         }
 
-        /* Splash Screen */
+        /* Splash Screen - Correção para sumir totalmente */
         #splash-screen {
             position: fixed; inset: 0; background: #121212; display: flex; 
             flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 9999; transition: opacity 0.6s ease;
+            z-index: 9999; transition: opacity 0.5s ease, visibility 0.5s;
         }
-        .splash-logo { width: 15vw; max-width: 250px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 0 30px rgba(0,100,0,0.3); }
-        .loader-text { color: var(--success); font-weight: bold; letter-spacing: 3px; animation: pulse 1.5s infinite; font-size: 2.5vh; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .splash-logo { width: 20vw; max-width: 200px; border-radius: 20px; margin-bottom: 20px; }
 
-        /* Cabeçalho Fixo (15% da altura da tela) */
-        header { 
-            height: 15vh; display: flex; flex-direction: column; justify-content: center; 
-            background: #1f1f1f; border-bottom: 2px solid #333; flex-shrink: 0; 
-        }
-        .header-museum { font-size: 1.8vh; opacity: 0.7; letter-spacing: 2px; margin-bottom: 5px; }
-        .header-player { font-size: 3.5vh; color: var(--secondary); font-weight: bold; text-transform: uppercase; }
-        #status-bar { font-size: 2.2vh; margin-top: 5px; min-height: 1.2em; }
-        #status-bar.alerta { color: var(--danger); font-weight: bold; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        /* Cabeçalho */
+        header { height: 12vh; background: #1f1f1f; border-bottom: 2px solid #333; display: flex; flex-direction: column; justify-content: center; flex-shrink: 0; }
+        .header-museum { font-size: 1.5vh; opacity: 0.7; }
+        .header-player { font-size: 3vh; color: var(--secondary); font-weight: bold; }
 
-        /* Área do Jogo (Ocupa o restante da tela) */
-        .main-content { 
-            flex: 1; display: flex; align-items: center; justify-content: center; 
-            padding: 2vh; overflow: hidden; position: relative;
-        }
+        /* Área Principal */
+        .main-content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2vh; overflow: hidden; }
 
-        /* Grid Inteligente para TVs 4K/Grande Formato */
         .grid { 
-            display: grid; gap: var(--card-gap); 
-            width: auto; height: 100%; max-height: 78vh;
-            aspect-ratio: var(--cols) / calc((var(--total-pares) * 2) / var(--cols));
+            display: grid; gap: 1.5vh; 
+            height: 100%; max-height: 75vh;
             grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); 
-            margin: auto;
+            aspect-ratio: var(--cols) / calc((var(--total-pares) * 2) / var(--cols));
         }
 
-        .card { width: 100%; height: 100%; aspect-ratio: 1/1; perspective: 1000px; cursor: pointer; }
+        .card { width: 100%; height: 100%; aspect-ratio: 1/1; perspective: 1000px; }
         .inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
         .card.flip .inner { transform: rotateY(180deg); }
-        .front, .back { position: absolute; width: 100%; height: 100%; border-radius: 12px; backface-visibility: hidden; background-size: cover; background-position: center; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
-        .front { background-image: url('imagens/capa.jpg'); border: 3px solid #444; }
-        .back { transform: rotateY(180deg); border: 3px solid var(--primary); }
+        .front, .back { position: absolute; width: 100%; height: 100%; border-radius: 10px; backface-visibility: hidden; background-size: cover; background-position: center; }
+        .front { background-image: url('imagens/capa.jpg'); border: 2px solid #444; }
+        .back { transform: rotateY(180deg); border: 2px solid var(--primary); }
 
-        /* Modais de Grande Formato */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .box { background: #222; padding: 4vh; border-radius: 20px; width: 90vw; max-width: 900px; border: 2px solid #444; text-align: center; }
-        .box h2 { font-size: 4vh; margin-top: 0; }
-        
-        #nome-display { font-size: 5vh; margin-bottom: 2vh; background: #000; border: 3px solid var(--secondary); color: white; text-align: center; width: 100%; padding: 2vh; border-radius: 10px; outline: none; }
-        
-        /* Teclado Virtual para Touch 75" */
-        .teclado-row { display: flex; justify-content: center; gap: 0.8vw; margin-bottom: 1vh; }
-        .key { flex: 1; padding: 2.8vh 0; background: #333; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 2.5vh; border: 1px solid #444; transition: 0.1s; color: white; }
-        .key.active, .key:active { background: var(--primary); transform: translateY(3px); border-color: var(--success); }
-        .key.wide { flex: 2.5; background: #555; }
+        /* MODAL DE NOME - Ajustado para TV Konka */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: flex; align-items: center; justify-content: center; z-index: 5000; }
+        .box { 
+            background: #222; padding: 3vh; border-radius: 15px; 
+            width: 85vw; max-height: 90vh; /* Não deixa extrapolar a tela */
+            display: flex; flex-direction: column; gap: 1.5vh;
+        }
+        #nome-display { font-size: 4vh; padding: 1.5vh; background: #000; border: 2px solid var(--secondary); color: white; text-align: center; border-radius: 8px; width: 100%; }
 
-        button { padding: 2.5vh; font-size: 3vh; cursor: pointer; border: none; background: var(--primary); color: white; border-radius: 12px; margin: 1vh 0; width: 100%; font-weight: bold; }
+        /* Teclado - Redimensionado */
+        .teclado-row { display: flex; justify-content: center; gap: 0.5vw; }
+        .key { flex: 1; padding: 2vh 0; background: #333; border-radius: 5px; font-weight: bold; font-size: 2.2vh; border: 1px solid #444; color: white; }
+        .key.active { background: var(--primary); }
+        .key.wide { flex: 2; background: #444; }
+
+        .btn-group { display: flex; gap: 10px; }
+        button { flex: 1; padding: 2vh; font-size: 2.5vh; font-weight: bold; border-radius: 10px; border: none; color: white; cursor: pointer; }
         
-        #feedback { position: fixed; top: 25%; left: 50%; transform: translate(-50%, -50%); background: var(--secondary); padding: 2vh 5vh; border-radius: 100px; display: none; z-index: 2000; font-size: 4vh; font-weight: bold; pointer-events: none; }
-        .confetti { position: fixed; width: 12px; height: 12px; z-index: 3000; animation: fall linear forwards; }
-        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } }
-        .hidden { display: none !important; }
+        .hidden { display: none !important; visibility: hidden !important; }
     </style>
 </head>
 <body>
 
 <div id="splash-screen">
     <img src="imagens/logo_ini.jpg" alt="Logo MIS" class="splash-logo">
-    <div class="loader-text">MIS CEARÁ</div>
+    <div style="font-size: 2vh; color: var(--success);">CARREGANDO...</div>
 </div>
 
 <header>
-    <div class="header-museum">JOGO DA MEMÓRIA - MUSEU DA IMAGEM E DO SOM</div>
-    <div id="header-player" class="header-player">AGUARDANDO JOGADOR</div>
-    <div id="status-bar">Carregando recursos...</div>
+    <div class="header-museum">JOGO DA MEMÓRIA - MIS CEARÁ</div>
+    <div id="header-player" class="header-player">IDENTIFIQUE-SE</div>
+    <div id="status-bar" style="font-size: 2vh;"></div>
 </header>
 
 <div class="main-content">
     <div id="menu" class="hidden">
-        <h2 style="font-size: 4vh; margin-bottom: 3vh;">Escolha a Dificuldade</h2>
-        <div style="display: flex; flex-direction: column; width: 40vw; max-width: 500px; margin: auto;">
-            <button onclick="comecarJogo(1)">NÍVEL 1 - FÁCIL (45s)</button>
-            <button onclick="comecarJogo(2)">NÍVEL 2 - MÉDIO (60s)</button>
-            <button onclick="comecarJogo(3)">NÍVEL 3 - DIFÍCIL (90s)</button>
+        <h2 style="margin-bottom: 2vh; font-size: 4vh;">Escolha o Nível</h2>
+        <div style="display: flex; flex-direction: column; width: 300px; margin: auto; gap: 10px;">
+            <button onclick="comecarJogo(1)" style="background: var(--primary);">NÍVEL 1</button>
+            <button onclick="comecarJogo(2)" style="background: var(--primary);">NÍVEL 2</button>
+            <button onclick="comecarJogo(3)" style="background: var(--primary);">NÍVEL 3</button>
         </div>
     </div>
     <div id="grid" class="grid hidden"></div>
@@ -117,56 +102,46 @@
 
 <div id="modal-nome" class="modal">
     <div class="box">
-        <h2>Digite seu Nome</h2>
-        <input type="text" id="nome-display" maxlength="12" placeholder="JOGADOR" readonly>
+        <h2 style="font-size: 3vh;">Digite seu Nome</h2>
+        <input type="text" id="nome-display" maxlength="12" readonly>
         <div id="keys-container"></div>
-        <button onclick="salvarNome()" style="background:var(--success); margin-top:2vh;">CONFIRMAR</button>
-        <button onclick="jogarSemNome()" style="background:#444;">PULAR</button>
+        <div class="btn-group">
+            <button onclick="salvarNome()" style="background: var(--success);">CONFIRMAR</button>
+            <button onclick="jogarSemNome()" style="background: #555;">PULAR</button>
+        </div>
     </div>
 </div>
 
 <div id="modal-conclusao" class="modal hidden">
     <div class="box">
-        <h2 id="titulo-vitoria" style="color: var(--success);">🏆 Vitória!</h2>
-        <p id="msg-vitoria" style="font-size: 3vh; margin-bottom: 3vh;"></p>
-        <button id="btn-continuar" onclick="proximaFase()" style="background:var(--success);">PRÓXIMA FASE</button>
-        <button onclick="voltarInicio()" style="background:#555;">MENU PRINCIPAL</button>
+        <h2 id="titulo-vitoria">Vitória!</h2>
+        <p id="msg-vitoria" style="font-size: 3vh;"></p>
+        <button id="btn-continuar" onclick="proximaFase()" style="background: var(--success);">PRÓXIMA FASE</button>
+        <button onclick="voltarInicio()" style="background: #444;">MENU</button>
     </div>
 </div>
 
 <div id="modal-gameover" class="modal hidden">
     <div class="box">
-        <h2 style="color: var(--danger);">⏰ Tempo Esgotado!</h2>
-        <p id="msg-gameover" style="font-size: 3vh; margin-bottom: 3vh;">Tente ser mais rápido na próxima!</p>
-        <button onclick="recomecarFase()" style="background:var(--secondary);">TENTAR NOVAMENTE</button>
-        <button onclick="voltarInicio()" style="background:#555;">SAIR</button>
+        <h2 style="color: var(--danger);">TEMPO ESGOTADO</h2>
+        <button onclick="recomecarFase()" style="background: var(--secondary);">TENTAR NOVAMENTE</button>
+        <button onclick="voltarInicio()" style="background: #444;">SAIR</button>
     </div>
 </div>
 
-<div id="feedback">PARABÉNS!</div>
-
 <script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(err => console.log("SW error", err));
-}
-
 const MIN_IMAGEM = 2, MAX_IMAGEM = 40;
-const fases = { 
-    1: { pares: 8, colunas: 4, tempo: 45, preview: 2 }, 
-    2: { pares: 10, colunas: 5, tempo: 60, preview: 3 }, 
-    3: { pares: 12, colunas: 6, tempo: 90, preview: 4 } 
-};
-
+const fases = { 1: { pares: 8, colunas: 4, tempo: 45, preview: 2 }, 2: { pares: 10, colunas: 5, tempo: 60, preview: 3 }, 3: { pares: 12, colunas: 6, tempo: 90, preview: 4 } };
 let nomeUsuario = "", jogoAtual, primeira, segunda, bloqueado = true, paresRestantes, tempoRestante, timerInterval;
 
+// Audio context
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function tocarSom(freq = 440, type = 'sine', duration = 0.1) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-    osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.05, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + duration);
+function tocarSom(f=440, t='sine', d=0.1) {
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type=t; o.frequency.value=f; g.gain.value=0.05;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime+d);
 }
 
 function criarTeclado() {
@@ -178,9 +153,8 @@ function criarTeclado() {
         const teclas = linha.includes(" ") ? ["←", "ESPAÇO"] : linha.split("");
         teclas.forEach(t => {
             const b = document.createElement("div"); b.className = "key " + (t.length > 1 ? "wide" : "");
-            b.id = "key-" + (t === "←" ? "Backspace" : t === "ESPAÇO" ? "Space" : t);
             b.innerText = t; 
-            b.onclick = () => { tocarSom(550); digitar(t === "←" ? "Backspace" : t === "ESPAÇO" ? "Space" : t); };
+            b.onclick = () => { tocarSom(550); digitar(t === "←" ? "BS" : t === "ESPAÇO" ? "SP" : t); };
             row.appendChild(b);
         });
         container.appendChild(row);
@@ -189,55 +163,43 @@ function criarTeclado() {
 
 function digitar(t) {
     const inp = document.getElementById("nome-display");
-    if(t === "Backspace") inp.value = inp.value.slice(0, -1);
-    else if(t === "Space") { if(inp.value.length < 12) inp.value += " "; }
+    if(t === "BS") inp.value = inp.value.slice(0, -1);
+    else if(t === "SP") { if(inp.value.length < 12) inp.value += " "; }
     else if(inp.value.length < 12) inp.value += t;
 }
 
-function salvarNome() { tocarSom(660); nomeUsuario = document.getElementById("nome-display").value.trim().toUpperCase() || "VISITANTE"; finalizarLogin(); }
-function jogarSemNome() { tocarSom(330); nomeUsuario = "VISITANTE"; finalizarLogin(); }
+function salvarNome() { nomeUsuario = document.getElementById("nome-display").value.trim() || "VISITANTE"; finalizarLogin(); }
+function jogarSemNome() { nomeUsuario = "VISITANTE"; finalizarLogin(); }
 function finalizarLogin() { document.getElementById("modal-nome").classList.add("hidden"); document.getElementById("header-player").innerText = `JOGADOR: ${nomeUsuario}`; voltarInicio(); }
-function voltarInicio() { clearInterval(timerInterval); document.querySelectorAll(".modal").forEach(m => m.classList.add("hidden")); document.getElementById("grid").classList.add("hidden"); document.getElementById("menu").classList.remove("hidden"); document.getElementById("status-bar").innerText = "Escolha um nível para começar"; document.getElementById("status-bar").classList.remove("alerta"); }
+function voltarInicio() { clearInterval(timerInterval); document.querySelectorAll(".modal").forEach(m => { if(m.id !== "modal-nome") m.classList.add("hidden")}); document.getElementById("grid").classList.add("hidden"); document.getElementById("menu").classList.remove("hidden"); }
 
-function comecarJogo(nivel) {
-    tocarSom(880); jogoAtual = { ...fases[nivel], nivel };
+function comecarJogo(n) {
+    jogoAtual = {...fases[n], nivel: n};
     document.getElementById("menu").classList.add("hidden");
-    const grid = document.getElementById("grid"); 
-    grid.classList.remove("hidden");
-    grid.style.setProperty('--cols', jogoAtual.colunas);
-    grid.style.setProperty('--total-pares', jogoAtual.pares);
-    grid.innerHTML = "";
+    const g = document.getElementById("grid"); g.classList.remove("hidden");
+    g.style.setProperty('--cols', jogoAtual.colunas); g.style.setProperty('--total-pares', jogoAtual.pares);
+    g.innerHTML = "";
+    paresRestantes = jogoAtual.pares; tempoRestante = jogoAtual.tempo; bloqueado = true;
     
-    primeira = null; segunda = null; bloqueado = true;
-    paresRestantes = jogoAtual.pares; tempoRestante = jogoAtual.tempo;
-    
-    let pool = []; for (let i = MIN_IMAGEM; i <= MAX_IMAGEM; i++) pool.push(i);
-    pool.sort(() => Math.random() - 0.5);
-    const selecionadas = pool.slice(0, jogoAtual.pares).map(num => `imagens/${num}.jpg`);
-    let deck = [...selecionadas, ...selecionadas].sort(() => Math.random() - 0.5);
+    let p = []; for(let i=MIN_IMAGEM; i<=MAX_IMAGEM; i++) p.push(i);
+    p.sort(() => Math.random()-0.5);
+    const sel = p.slice(0, jogoAtual.pares).map(num => `imagens/${num}.jpg`);
+    let deck = [...sel, ...sel].sort(() => Math.random()-0.5);
     
     deck.forEach(url => {
         const c = document.createElement("div"); c.className = "card flip";
         c.innerHTML = `<div class="inner"><div class="front"></div><div class="back" style="background-image:url('${url}')"></div></div>`;
-        c.onclick = () => { clicarCarta(c, url); }; 
-        grid.appendChild(c);
+        c.onclick = () => clicarCarta(c, url); g.appendChild(c);
     });
 
-    document.getElementById("status-bar").innerText = `Memorize as imagens! (${jogoAtual.preview}s)`;
-    setTimeout(() => { 
-        document.querySelectorAll(".card").forEach(c => c.classList.remove("flip")); 
-        bloqueado = false; 
-        iniciarCronometro(); 
-    }, jogoAtual.preview * 1000);
+    setTimeout(() => { document.querySelectorAll(".card").forEach(c => c.classList.remove("flip")); bloqueado = false; iniciarCronometro(); }, jogoAtual.preview * 1000);
 }
 
 function iniciarCronometro() {
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
         tempoRestante--; 
-        const bar = document.getElementById("status-bar");
-        bar.innerText = `NÍVEL ${jogoAtual.nivel} — TEMPO RESTANTE: ${tempoRestante}s`;
-        if(tempoRestante <= 10) bar.classList.add("alerta");
+        document.getElementById("status-bar").innerText = `TEMPO: ${tempoRestante}s`;
         if(tempoRestante <= 0) { clearInterval(timerInterval); document.getElementById("modal-gameover").classList.remove("hidden"); }
     }, 1000);
 }
@@ -249,48 +211,33 @@ function clicarCarta(card, img) {
     else {
         segunda = {card, img}; bloqueado = true;
         if(primeira.img === segunda.img) {
-            tocarSom(1200, 'square', 0.2); 
-            document.getElementById("feedback").style.display = "block";
-            setTimeout(() => document.getElementById("feedback").style.display = "none", 800);
-            paresRestantes--; primeira = null; segunda = null; bloqueado = false;
+            tocarSom(1000, 'square'); paresRestantes--; primeira = null; segunda = null; bloqueado = false;
             if(paresRestantes === 0) finalizarFase();
         } else {
-            setTimeout(() => { 
-                tocarSom(220, 'triangle', 0.2); 
-                primeira.card.classList.remove("flip"); 
-                segunda.card.classList.remove("flip"); 
-                primeira = null; segunda = null; bloqueado = false; 
-            }, 700);
+            setTimeout(() => { primeira.card.classList.remove("flip"); segunda.card.classList.remove("flip"); primeira = null; segunda = null; bloqueado = false; }, 700);
         }
     }
 }
 
 function finalizarFase() {
     clearInterval(timerInterval);
-    const tit = document.getElementById("titulo-vitoria"), msg = document.getElementById("msg-vitoria"), btn = document.getElementById("btn-continuar");
-    if(jogoAtual.nivel === 3) { tit.innerText = "⭐ CAMPEÃO DO MIS! ⭐"; msg.innerText = `Incrível, ${nomeUsuario}! Você completou o desafio máximo.`; btn.classList.add("hidden"); lancarConfetes(); }
-    else { tit.innerText = "🏆 Fase Concluída!"; msg.innerText = `Muito bem, ${nomeUsuario}! Vamos para o próximo nível?`; btn.classList.remove("hidden"); }
+    document.getElementById("msg-vitoria").innerText = `Parabéns, ${nomeUsuario}!`;
     document.getElementById("modal-conclusao").classList.remove("hidden");
 }
 
-function lancarConfetes() {
-    for (let i = 0; i < 100; i++) {
-        const c = document.createElement("div"); c.className = "confetti";
-        c.style.left = Math.random() * 100 + "vw"; c.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-        c.style.animationDuration = (Math.random() * 2 + 3) + "s"; document.body.appendChild(c);
-        setTimeout(() => c.remove(), 5000);
-    }
-}
 function recomecarFase() { comecarJogo(jogoAtual.nivel); }
 function proximaFase() { document.getElementById("modal-conclusao").classList.add("hidden"); comecarJogo(jogoAtual.nivel + 1); }
 
 window.onload = () => {
     criarTeclado();
     setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
-        splash.style.opacity = '0';
-        setTimeout(() => { splash.remove(); document.getElementById("status-bar").innerText = "Identifique-se para jogar"; }, 600);
-    }, 2500);
+        const s = document.getElementById('splash-screen');
+        s.style.opacity = '0';
+        setTimeout(() => { 
+            s.style.display = 'none'; // Garante que sai do fluxo da tela
+            s.classList.add("hidden");
+        }, 500);
+    }, 2000);
 };
 </script>
 </body>
