@@ -1,43 +1,16 @@
 {
-  "name": "Jogo da Memória - MIS Ceará",
+  "name": "Jogo da Memória MIS",
   "short_name": "Memória MIS",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "fullscreen",
+  "orientation": "landscape",
   "background_color": "#121212",
   "theme_color": "#006400",
-  "orientation": "landscape",
   "icons": [
     {
       "src": "imagens/logo_app.png",
       "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "imagens/logo_app.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
-}{
-  "name": "Jogo da Memória - MIS Ceará",
-  "short_name": "Memória MIS",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#006400",
-  "orientation": "landscape",
-  "icons": [
-    {
-      "src": "imagens/logo_app.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "imagens/logo_app.png",
-      "sizes": "512x512",
       "type": "image/png"
     }
   ]
 }
-
